@@ -29,7 +29,7 @@ app.get('/api/health', async (req, res) => {
     await db.query('SELECT 1 AS ok');
     res.json({ success: true, message: 'Billboard Technology API is running' });
   } catch (err) {
-    res.status(500).json({ success: false, message: 'DB connection failed', error: err.message });
+    res.status(500).json({ success: false, message: 'DB connection failed', code: err.code, errno: err.errno, sqlState: err.sqlState, detail: err.message });
   }
 });
 
