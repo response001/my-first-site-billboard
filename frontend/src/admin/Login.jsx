@@ -36,7 +36,6 @@ export default function AdminLogin() {
             {busy ? 'Logging in...' : 'Login'}
           </button>
         </form>
-        <p className="text-xs text-gray-400 mt-4">Default: username <code>admin</code>, password <code>admin123</code></p>
       </div>
     </div>
   );

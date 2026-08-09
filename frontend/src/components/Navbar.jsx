@@ -61,7 +61,7 @@ export default function Navbar() {
 
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center gap-4">
         <Link to="/" className="flex items-center gap-2 font-bold text-xl shrink-0">
-          <span className="w-9 h-9 rounded-lg btn-gradient text-white flex items-center justify-center">BB</span>
+          <img src="/logo.PNG" alt="Billboard Technology logo" className="w-11 h-11 object-cover rounded-lg shadow-sm ring-1 ring-gray-200" />
           <span className="hidden md:inline">onBillBoard<span className="text-gradient">.com</span></span>
         </Link>
 

@@ -28,22 +28,31 @@ export default function Contact() {
         <div className="space-y-4">
           <div className="bg-white rounded-xl shadow p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Our Location</h2>
-            <div className="rounded-lg bg-gray-100 h-56 flex items-center justify-center text-gray-400">
-              <span className="text-center">📍 Kigali, Rwanda<br />Map will be displayed here</span>
+            <div className="rounded-lg overflow-hidden border border-gray-200 h-56">
+              <iframe
+                title="Billboard Technology location"
+                src="https://www.google.com/maps?q=Chic%20Building%2C%20Nyarugenge%2C%20Kigali%2C%20Rwanda&output=embed"
+                className="w-full h-full"
+                style={{ border: 0 }}
+                loading="lazy"
+                allowFullScreen
+                referrerPolicy="no-referrer-when-downgrade"
+              />
             </div>
+            <p className="text-sm text-gray-500 mt-3">📍 Chic Building, 1st Floor, Chic, Nyarugenge, Kigali, Rwanda</p>
           </div>
           <div className="bg-white rounded-xl shadow p-6 grid sm:grid-cols-2 gap-4">
             <div>
               <p className="text-xs uppercase text-gray-400 font-semibold">Phone</p>
-              <p className="font-medium">+250 79 410 9388</p>
+              <p className="font-medium">0787 724 701 / 0727 367 824</p>
             </div>
             <div>
               <p className="text-xs uppercase text-gray-400 font-semibold">Email</p>
-              <p className="font-medium">info@onbillboard.com</p>
+              <p className="font-medium">reponseimanirabizi@gmail.com</p>
             </div>
             <div>
               <p className="text-xs uppercase text-gray-400 font-semibold">WhatsApp</p>
-              <p className="font-medium">+250 79 410 9388</p>
+              <p className="font-medium">0787 724 701</p>
             </div>
             <div>
               <p className="text-xs uppercase text-gray-400 font-semibold">Social</p>

@@ -73,6 +73,71 @@ The frontend proxies `/api` and `/uploads` to the backend on port 5000.
 - Password: `admin123`
 - Login page: http://localhost:3000/admin/login
 
+## Admin Notifications (New Order + Internship Application)
+
+When a customer places an order or applies for an internship, automatic notifications are sent:
+
+- **Admin** — email + SMS (+ WhatsApp when configured):
+  - Email: `reponseimanirabizi@gmail.com`
+  - SMS/WhatsApp: `+250 794 109 388`
+- **Customer** — confirmation email + SMS to their own email / phone.
+
+Configure in `backend/.env`:
+
+```
+ADMIN_EMAIL=reponseimanirabizi@gmail.com
+ADMIN_WHATSAPP=+250794109388
+SITE_URL=http://localhost:5000
+
+# Email - Gmail app password recommended
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your-gmail@gmail.com
+SMTP_PASS=your-app-password
+
+# SMS - Africa's Talking (admin + customer)
+AT_USERNAME=sandbox            # use your live username when ready, and AT_SANDBOX=false
+AT_API_KEY=your-africastalking-api-key
+AT_SENDER_ID=your-approved-sender-id
+AT_SANDBOX=true
+
+# WhatsApp - Meta WhatsApp Cloud API
+WHATSAPP_ACCESS_TOKEN=your-meta-access-token
+WHATSAPP_PHONE_ID=your-whatsapp-phone-number-id
+WHATSAPP_API_VERSION=v19.0
+```
+
+> Notes:
+> - `ADMIN_WHATSAPP` is the number that receives SMS and WhatsApp messages.
+> - Notifications are skipped (with a console warning) if credentials are missing, so the order/internship flow is never blocked.
+> - Test all channels with `cd backend && npm run test-notify`.
+> - Meta WhatsApp Cloud API only delivers free-form text inside the 24h customer-service window or via an approved template.
+
+## Mobile Money Payments (Paypack)
+
+When a customer picks **"Mobile Money (MTN MoMo / Airtel Money)"** at checkout:
+
+1. The order is saved as pending, then the backend asks **Paypack** to send a payment prompt to the customer's phone.
+2. The customer enters their Mobile Money PIN on their phone.
+3. The frontend polls `GET /api/payments/paypack/status/:ref` (and a webhook at `POST /api/payments/paypack/webhook` can also confirm in production).
+4. On success: stock is deducted, the order is confirmed, and the admin + customer emails/SMS are sent. On failure the order is cancelled automatically.
+
+Configure in `backend/.env`:
+
+```
+PAYPACK_CLIENT_ID=your-client-id
+PAYPACK_CLIENT_SECRET=your-client-secret
+PAYPACK_MODE=development
+PAYPACK_WEBHOOK_SECRET=your-webhook-secret
+PAYPACK_BASE_URL=https://payments.paypack.rw/api
+```
+
+> Notes:
+> - Get credentials by creating an **application** in your Paypack dashboard (`payments.paypack.rw`).
+> - In `PAYPACK_MODE=development` (sandbox) payments are simulated; switch to `production` when going live.
+> - Webhooks need a public URL (e.g. ngrok); the checkout polling works even without one.
+
 ## Main Features
 
 - **Shop:** product categories, product details, add to cart, checkout, order tracking (status update in admin)
@@ -91,4 +156,4 @@ The frontend proxies `/api` and `/uploads` to the backend on port 5000.
 - Intern portal to track progress
 - Certificates with QR codes
 - Reviews & ratings on products and courses (`reviews` table exists)
-- Email/SMS notifications
+- Email/SMS notifications to customers

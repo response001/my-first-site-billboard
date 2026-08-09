@@ -61,6 +61,7 @@ export const api = {
   placeOrder: (data) => request('POST', '/orders', data),
   myOrders: () => request('GET', '/orders/mine'),
   trackOrder: (id) => request('GET', `/orders/track/${id}`),
+  payStatus: (ref) => request('GET', `/payments/paypack/status/${ref}`),
 
   internshipApply: (formData) => request('POST', '/internship/apply', formData, true),
   courses: () => request('GET', '/courses'),

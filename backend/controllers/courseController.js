@@ -1,4 +1,5 @@
 const { Course, CourseRegistration } = require('../models/Course');
+const { notifyCourseRegistration } = require('../services/notifier');
 
 exports.list = async (req, res) => {
   try {
@@ -40,6 +41,8 @@ exports.register = async (req, res) => {
     const course = await Course.byId(course_id);
     if (!course) return res.status(404).json({ success: false, message: 'Course not found' });
     const id = await CourseRegistration.create({ full_name, email, phone, course_id, course_name: course.name, education_level });
+    notifyCourseRegistration({ full_name, email, phone, course_id, course_name: course.name, education_level }, id)
+      .catch((err) => console.error('[notify] Course registration notification error:', err.message));
     res.status(201).json({ success: true, message: 'Registration submitted', id });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });

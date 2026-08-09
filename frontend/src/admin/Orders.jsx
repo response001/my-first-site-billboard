@@ -37,6 +37,7 @@ export default function AdminOrders() {
               <th className="px-4 py-3">Items</th>
               <th className="px-4 py-3">Total</th>
               <th className="px-4 py-3">Payment</th>
+              <th className="px-4 py-3">Pay Status</th>
               <th className="px-4 py-3">Status</th>
             </tr>
           </thead>
@@ -56,6 +57,15 @@ export default function AdminOrders() {
                 </td>
                 <td className="px-4 py-2 font-semibold">{formatRWF(o.total)}</td>
                 <td className="px-4 py-2 text-xs">{o.payment_method}</td>
+                <td className="px-4 py-2">
+                  <span className={`inline-block rounded-full px-2 py-1 text-xs font-medium ${
+                    o.payment?.status === 'paid' ? 'bg-green-100 text-green-700'
+                    : o.payment?.status === 'failed' ? 'bg-red-100 text-red-700'
+                    : 'bg-yellow-100 text-yellow-700'
+                  }`}>
+                    {o.payment?.status || 'pending'}
+                  </span>
+                </td>
                 <td className="px-4 py-2">
                   <select
                     value={o.status}

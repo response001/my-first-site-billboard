@@ -9,7 +9,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
         <div>
           <div className="flex items-center gap-2 font-bold text-xl text-white mb-3">
-            <span className="w-9 h-9 rounded-lg btn-gradient text-white flex items-center justify-center">BB</span>
+            <img src="/logo.PNG" alt="Billboard Technology logo" className="w-11 h-11 object-cover rounded-lg shadow-sm ring-1 ring-white/10" />
             onBillBoard<span className="text-gradient">.com</span>
           </div>
           <p className="text-sm text-gray-400">{t('footer.aboutText')}</p>
@@ -41,9 +41,9 @@ export default function Footer() {
         <div>
           <h4 className="text-white font-semibold mb-3">{t('footer.contact')}</h4>
           <ul className="space-y-2 text-sm text-gray-400">
-            <li>📍 Kigali, Rwanda</li>
-            <li>📞 +250 78 000 0000</li>
-            <li>✉️ info@onbillboard.com</li>
+            <li>📍 Chic Building, 1st Floor, Nyarugenge, Kigali</li>
+            <li>📞 0787 724 701 / 0727 367 824</li>
+            <li>✉️ reponseimanirabizi@gmail.com</li>
             <li className="flex gap-3 pt-1">
               <a href="#" className="hover:text-accent-400">Facebook</a>
               <a href="#" className="hover:text-accent-400">Instagram</a>

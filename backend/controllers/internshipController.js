@@ -1,4 +1,5 @@
 const Internship = require('../models/Internship');
+const { notifyInternshipApplication } = require('../services/notifier');
 
 exports.apply = async (req, res) => {
   try {
@@ -10,6 +11,8 @@ exports.apply = async (req, res) => {
     const cv = files.cv ? `/uploads/${files.cv[0].filename}` : null;
     const rec = files.recommendation ? `/uploads/${files.recommendation[0].filename}` : null;
     const id = await Internship.create({ full_name, school, level, email, phone, cv_file: cv, recommendation_file: rec });
+    notifyInternshipApplication({ full_name, school, level, email, phone, cv_file: cv, recommendation_file: rec }, id)
+      .catch((err) => console.error('[notify] Internship notification error:', err.message));
     res.status(201).json({ success: true, message: 'Internship application submitted', id });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });

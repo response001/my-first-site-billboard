@@ -37,7 +37,7 @@ exports.orders = async (req, res) => {
   try {
     const orders = await Order.all();
     const withItems = await Promise.all(
-      orders.map(async (o) => ({ ...o, items: await Order.itemsByOrder(o.id) }))
+      orders.map(async (o) => ({ ...o, items: await Order.itemsByOrder(o.id), payment: await Order.paymentByOrder(o.id) }))
     );
     res.json({ success: true, orders: withItems });
   } catch (err) {

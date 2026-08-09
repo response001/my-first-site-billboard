@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { useCart } from '../services/CartContext';
 import { api, getAuth } from '../services/api';
+
+const MOBILE_MONEY = 'Mobile Money (MTN MoMo / Airtel Money)';
 
 function formatRWF(n) {
   return new Intl.NumberFormat('en-RW', { style: 'currency', currency: 'RWF', maximumFractionDigits: 0 }).format(n);
@@ -20,8 +22,42 @@ export default function Checkout() {
   const [placed, setPlaced] = useState(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [paying, setPaying] = useState(false);
+  const [payRef, setPayRef] = useState('');
+  const payTriesRef = useRef(0);
+
+  useEffect(() => {
+    if (!paying || !payRef) return;
+    payTriesRef.current = 0;
+    const timer = setInterval(async () => {
+      payTriesRef.current += 1;
+      if (payTriesRef.current > 40) {
+        clearInterval(timer);
+        setPaying(false);
+        setError('Payment is taking too long. Please check your phone and try again, or contact us.');
+        return;
+      }
+      try {
+        const data = await api.payStatus(payRef);
+        if (data.status === 'successful') {
+          clearInterval(timer);
+          clear();
+          setPaying(false);
+          setPlaced(data.order_number || `BB-${Date.now().toString().slice(-8)}`);
+        } else if (data.status === 'failed' || data.status === 'rejected' || data.status === 'cancelled') {
+          clearInterval(timer);
+          setPaying(false);
+          setError('Payment was not completed. Your order was not confirmed. You can try again.');
+        }
+      } catch (err) {
+        // keep polling on transient errors
+      }
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [paying, payRef, clear]);
 
   if (!token) return <Navigate to="/login" replace />;
+
   if (placed) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-20 text-center">
@@ -34,6 +70,8 @@ export default function Checkout() {
   }
 
   if (items.length === 0) return <Navigate to="/cart" replace />;
+
+  const isMobileMoney = form.payment_method === MOBILE_MONEY;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -50,14 +88,34 @@ export default function Checkout() {
           quantity: i.quantity,
         })),
       });
-      clear();
-      setPlaced(data.order_number || `BB-${Date.now().toString().slice(-8)}`);
+      if (data.requires_payment) {
+        setPayRef(data.paypack_ref);
+        setPaying(true);
+      } else {
+        clear();
+        setPlaced(data.order_number || `BB-${Date.now().toString().slice(-8)}`);
+      }
     } catch (err) {
       setError(err.message);
     } finally {
       setBusy(false);
     }
   };
+
+  if (paying) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-20 text-center">
+        <div className="text-6xl mb-4">📱</div>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">Confirm Payment on Your Phone</h1>
+        <p className="text-gray-600 mb-2">We sent a payment request for <strong>{formatRWF(total)}</strong> to <strong>{form.customer_phone}</strong>.</p>
+        <p className="text-gray-600 mb-6">Enter your Mobile Money PIN on your phone when prompted. Waiting for confirmation...</p>
+        <div className="inline-flex items-center gap-2 text-brand-600">
+          <span className="w-5 h-5 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
+          <span className="text-sm">Waiting for payment...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
@@ -127,7 +185,7 @@ export default function Checkout() {
             disabled={busy}
             className="w-full mt-4 bg-accent-500 text-white py-3 rounded-lg font-semibold hover:bg-accent-400 disabled:opacity-50"
           >
-            {busy ? 'Placing order...' : 'Place Order'}
+            {busy ? (isMobileMoney ? 'Initiating payment...' : 'Placing order...') : isMobileMoney ? 'Pay Now' : 'Place Order'}
           </button>
         </div>
       </form>

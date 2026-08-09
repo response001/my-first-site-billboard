@@ -1,4 +1,5 @@
 const { Message, BlogPost } = require('../models/Message');
+const { notifyContactMessage } = require('../services/notifier');
 
 exports.sendMessage = async (req, res) => {
   try {
@@ -7,6 +8,8 @@ exports.sendMessage = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Name, email and message are required' });
     }
     const id = await Message.create({ name, email, subject, message });
+    notifyContactMessage({ name, email, subject, message }, id)
+      .catch((err) => console.error('[notify] Contact message notification error:', err.message));
     res.status(201).json({ success: true, message: 'Message sent successfully', id });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });

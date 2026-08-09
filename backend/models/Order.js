@@ -1,7 +1,7 @@
 const db = require('../config/db');
 
 const Order = {
-  async create(order, items) {
+  async create(order, items, deductStock = true) {
     const connection = await db.getConnection();
     try {
       await connection.beginTransaction();
@@ -25,7 +25,7 @@ const Order = {
           'INSERT INTO order_items (order_id, product_id, product_name, price, quantity) VALUES (?, ?, ?, ?, ?)',
           [orderId, item.product_id || null, item.product_name, item.price, item.quantity]
         );
-        if (item.product_id) {
+        if (deductStock && item.product_id) {
           await connection.execute(
             'UPDATE products SET quantity = GREATEST(quantity - ?, 0) WHERE id = ?',
             [item.quantity, item.product_id]
@@ -56,6 +56,49 @@ const Order = {
   async itemsByOrder(id) {
     const [rows] = await db.execute('SELECT * FROM order_items WHERE order_id = ?', [id]);
     return rows;
+  },
+  async byRef(ref) {
+    const [rows] = await db.execute('SELECT * FROM payments WHERE reference = ? LIMIT 1', [ref]);
+    return rows[0];
+  },
+  async paymentByOrder(orderId) {
+    const [rows] = await db.execute('SELECT * FROM payments WHERE order_id = ? LIMIT 1', [orderId]);
+    return rows[0];
+  },
+  async savePaymentRef(orderId, ref) {
+    await db.execute('UPDATE payments SET reference = ? WHERE order_id = ?', [ref, orderId]);
+  },
+  async confirmPayment(orderId, reference) {
+    const connection = await db.getConnection();
+    try {
+      await connection.beginTransaction();
+      const [pay] = await connection.execute('SELECT status FROM payments WHERE order_id = ? LIMIT 1', [orderId]);
+      if (!pay[0] || pay[0].status === 'paid') {
+        await connection.rollback();
+        return;
+      }
+      const [items] = await connection.execute('SELECT product_id, quantity FROM order_items WHERE order_id = ?', [orderId]);
+      for (const item of items) {
+        if (item.product_id) {
+          await connection.execute(
+            'UPDATE products SET quantity = GREATEST(quantity - ?, 0) WHERE id = ?',
+            [item.quantity, item.product_id]
+          );
+        }
+      }
+      await connection.execute("UPDATE payments SET status = 'paid', reference = ? WHERE order_id = ?", [reference, orderId]);
+      await connection.execute("UPDATE orders SET status = 'pending' WHERE id = ?", [orderId]);
+      await connection.commit();
+    } catch (err) {
+      await connection.rollback();
+      throw err;
+    } finally {
+      connection.release();
+    }
+  },
+  async failPayment(orderId) {
+    await db.execute("UPDATE payments SET status = 'failed' WHERE order_id = ?", [orderId]);
+    await db.execute("UPDATE orders SET status = 'cancelled' WHERE id = ?", [orderId]);
   },
   async byUser(userId) {
     const [rows] = await db.execute('SELECT * FROM orders WHERE user_id = ? ORDER BY id DESC', [userId]);
