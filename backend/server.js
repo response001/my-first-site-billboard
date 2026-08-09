@@ -37,6 +37,26 @@ app.get('/', (req, res) => {
   res.json({ success: true, message: 'Backend is running successfully' });
 });
 
+app.get('/api/db-status', (req, res) => {
+  const uri = process.env.MYSQL_URL || '';
+  let host = 'not set';
+  if (uri) {
+    try {
+      const parsed = new URL(uri);
+      host = parsed.hostname;
+    } catch (e) {
+      host = 'unparsable';
+    }
+  }
+  res.json({
+    hasMysqlUrl: !!uri,
+    host,
+    dbHost: process.env.DB_HOST || 'not set',
+    dbUser: process.env.DB_USER || 'not set',
+    dbName: process.env.DB_NAME || 'not set',
+  });
+});
+
 app.get('/api/init-db', async (req, res) => {
   try {
     const [check] = await db.query('SELECT COUNT(*) AS c FROM products');
