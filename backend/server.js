@@ -43,6 +43,10 @@ app.use('/api/admin', adminRoutes);
 
 app.use((req, res) => res.status(404).json({ success: false, message: 'Route not found' }));
 
-app.listen(PORT, () => {
-  console.log(`Billboard Technology API running on http://localhost:${PORT}`);
-});
+module.exports = app;
+
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Billboard Technology API running on http://localhost:${PORT}`);
+  });
+}
