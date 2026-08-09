@@ -31,6 +31,10 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
+app.get('/', (req, res) => {
+  res.json({ success: true, message: 'Backend is running successfully' });
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
