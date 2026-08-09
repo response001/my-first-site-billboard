@@ -2,8 +2,6 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const fs = require('fs');
-const mysql = require('mysql2');
 
 const db = require('./config/db');
 const authRoutes = require('./routes/auth');
@@ -29,52 +27,7 @@ app.get('/api/health', async (req, res) => {
     await db.query('SELECT 1 AS ok');
     res.json({ success: true, message: 'Billboard Technology API is running' });
   } catch (err) {
-    res.status(500).json({ success: false, message: 'DB connection failed', code: err.code, errno: err.errno, sqlState: err.sqlState, detail: err.message });
-  }
-});
-
-app.get('/', (req, res) => {
-  res.json({ success: true, message: 'Backend is running successfully' });
-});
-
-app.get('/api/db-status', (req, res) => {
-  const uri = process.env.MYSQL_URL || '';
-  let host = 'not set';
-  if (uri) {
-    try {
-      const parsed = new URL(uri);
-      host = parsed.hostname;
-    } catch (e) {
-      host = 'unparsable';
-    }
-  }
-  res.json({
-    hasMysqlUrl: !!uri,
-    host,
-    dbHost: process.env.DB_HOST || 'not set',
-    dbUser: process.env.DB_USER || 'not set',
-    dbName: process.env.DB_NAME || 'not set',
-  });
-});
-
-app.get('/api/init-db', async (req, res) => {
-  try {
-    const [check] = await db.query('SELECT COUNT(*) AS c FROM products');
-    return res.json({ success: true, message: 'DB already initialized', products: check[0].c });
-  } catch (err) {
-    const uri = process.env.MYSQL_URL;
-    const conn = mysql.createConnection(uri || {
-      host: process.env.DB_HOST || 'localhost',
-      user: process.env.DB_USER || 'root',
-      password: process.env.DB_PASSWORD || '',
-      database: process.env.DB_NAME || 'onbillboard',
-    }, { multipleStatements: true });
-    const sql = fs.readFileSync(path.join(__dirname, 'database.sql'), 'utf8')
-      .replace(/^CREATE DATABASE.*$/gm, '')
-      .replace(/^USE .*;$/gm, '');
-    await conn.promise().query(sql);
-    conn.destroy();
-    res.json({ success: true, message: 'DB initialized' });
+    res.status(500).json({ success: false, message: 'DB connection failed', error: err.message });
   }
 });
 
