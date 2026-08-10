@@ -43,7 +43,7 @@ export default function Footer() {
           <ul className="space-y-2 text-sm text-gray-400">
             <li>📍 Chic Building, 1st Floor, Nyarugenge, Kigali</li>
             <li>📞 0787 724 701 / 0727 367 824</li>
-            <li>✉️ reponseimanirabizi@gmail.com</li>
+            <li>✉️ remsley55@gmail.com</li>
             <li className="flex gap-3 pt-1">
               <a href="#" className="hover:text-accent-400">Facebook</a>
               <a href="#" className="hover:text-accent-400">Instagram</a>
